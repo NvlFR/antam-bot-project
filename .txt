@@ -1,0 +1,5 @@
+
+--- SERVICE API TOKEN GENERATED ---
+Token: 1|EWw4TUbmJV0JIA4N5lzg2hRi2XPLnU1PpHn29cEYe7e27425
+Simpan token ini di file .env BOT ENGINE.
+-------------------------------------
