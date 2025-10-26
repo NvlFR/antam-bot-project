@@ -10,8 +10,8 @@ const { Boom } = require("@hapi/boom");
 
 const qrcode = require("qrcode-terminal");
 const axios = require("axios");
-const express = require("express"); // Tambah: Express untuk Worker API
-const { runAutomation } = require("./automation"); // Tambah: Import fungsi otomatisasi
+const express = require("express");
+const { runAutomation } = require("./automation"); // Import fungsi otomatisasi
 
 // --- KONFIGURASI GLOBAL ---
 const API_BASE_URL = process.env.LARAVEL_API_BASE_URL;
@@ -21,7 +21,7 @@ const WORKER_PORT = 3000; // Port untuk Worker API
 
 // Map untuk menyimpan status percakapan setiap user (jid)
 const userSessions = new Map();
-let globalWaSock = null; // Tambah: Variabel untuk menyimpan koneksi WA global
+let globalWaSock = null; // Variabel untuk menyimpan koneksi WA global
 
 const STEPS = {
   IDLE: "IDLE",
@@ -209,7 +209,7 @@ async function handleMessages(sock, messages) {
           await sock.sendMessage(jid, {
             text:
               `NIK Anda (*${text}*) berhasil dicatat.\n\n` +
-              `Sekarang, silakan sebutkan **Kode Cabang Antam** yang Anda tuju (Contoh: BDO, JKT, SBY).`,
+              `Sekarang, silakan sebutkan **Kode Cabang Antam** yang Anda tuju (Contoh: BDO, JKT, SBY, BINTARO).`,
           });
         } else {
           await sock.sendMessage(jid, {
@@ -219,7 +219,12 @@ async function handleMessages(sock, messages) {
         break;
 
       case STEPS.ASK_BRANCH:
-        if (text.length >= 3 && text.length <= 5 && text.match(/^[a-zA-Z]+$/)) {
+        // *** PERBAIKAN BUG DI SINI: text.length <= 5 diubah menjadi text.length <= 15 ***
+        if (
+          text.length >= 3 &&
+          text.length <= 15 && // Batas diperluas untuk nama cabang panjang
+          text.match(/^[a-zA-Z]+$/)
+        ) {
           userSession.data.branch_code = text.toUpperCase();
           userSession.step = STEPS.ASK_DATE;
           userSessions.set(jid, userSession);
@@ -230,7 +235,7 @@ async function handleMessages(sock, messages) {
           });
         } else {
           await sock.sendMessage(jid, {
-            text: "❌ Mohon masukkan kode cabang yang valid (minimal 3-5 huruf, tanpa angka).",
+            text: "❌ Mohon masukkan kode cabang yang valid (minimal 3-15 huruf, tanpa angka).",
           });
         }
         break;
